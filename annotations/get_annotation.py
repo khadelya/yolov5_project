@@ -59,11 +59,11 @@ def get_box_coordinates(feature):
 
 # features[0]["geometry"]["coordinates"][0][0][0]
 
-def get_pixel_values(box_coordinates, UpperLeft, pixelSize):
-    xmin_px = round((box_coordinates[0] - UpperLeft[0]) / pixelSize[0]) # round((x_coord - upper_left_x) / px_size_x)
-    ymin_px = round((UpperLeft[1] - box_coordinates[1]) / pixelSize[1]) # round((upper_left_y - y_coord) / px_size_y)
-    xmax_px = round((box_coordinates[2] - UpperLeft[0]) / pixelSize[0])
-    ymax_px = round((UpperLeft[1] - box_coordinates[3]) / pixelSize[1])
+def get_pixel_values(box_coordinates, upper_left, px_size):
+    xmin_px = round((box_coordinates[0] - upper_left[0]) / px_size[0]) # round((x_coord - upper_left_x) / px_size_x)
+    ymin_px = round((upper_left[1] - box_coordinates[1]) / px_size[1]) # round((upper_left_y - y_coord) / px_size_y)
+    xmax_px = round((box_coordinates[2] - upper_left[0]) / px_size[0])
+    ymax_px = round((upper_left[1] - box_coordinates[3]) / px_size[1])
     return [xmin_px, ymin_px, xmax_px, ymax_px]
 
 def convert(size, box):
