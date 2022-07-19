@@ -4,15 +4,15 @@ import json
 import os
 
 
-def json_to_new_coordinates(tif_file_name, json_file_name):
-    ds = gdal.Open(f"{tif_file_name}.tif")
+def json_to_new_coordinates(tif_file_path, json_file_path):
+    ds = gdal.Open(tif_file_path)
     prj = ds.GetProjection()
     src = osr.SpatialReference(wkt=prj)
     src_epsg = int(src.GetAuthorityCode(None))  # src - .tif file
     JSON_EPSG = 4326  # EPSG WGS 84 of json file
     transformer = Transformer.from_crs(JSON_EPSG, src_epsg)
 
-    with open(f"{json_file_name}.json", "r+") as f:
+    with open(json_file_path, "r+") as f:
         train = json.load(f)
         features = train["features"]
         for feature in features:
@@ -23,14 +23,15 @@ def json_to_new_coordinates(tif_file_name, json_file_name):
                     longitude, latitude
                 )
 
-    with open(f"{json_file_name}_new_coord.json", "w", encoding="utf-8") as f:
+    with open(
+        json_file_path.replace(".json", "_new_coord.json"), "w", encoding="utf-8"
+    ) as f:
         json.dump(train, f, ensure_ascii=False, indent=2)
     return
 
 
-# Json file should be in the new coordinates f'{json_file_name}_new_coord.json'
-def crop_tif(tif_file_name, json_file_name):
-    with open(f"{json_file_name}_new_coord.json", "r") as f:
+def crop_tif(tif_file_path, json_file_path):
+    with open(json_file_path.replace(".json", "_new_coord.json"), "r") as f:
         train = json.load(f)
         features = train["features"]
         for i in range(len(features)):
@@ -41,7 +42,7 @@ def crop_tif(tif_file_name, json_file_name):
             window = (xmin, ymax, xmax, ymin)
             gdal.Translate(
                 f"../data/images/train/output_crop_raster_{i}.tif",
-                f"{tif_file_name}.tif",
+                tif_file_path,
                 projWin=window,
             )
     return
@@ -89,18 +90,18 @@ def convert(size, box):
     return (x_center, y_center, width, height)
 
 
-def convert_annotation(tif_file_name, json_file_name_train, json_file_name_manual):
+def convert_annotation(tif_file_path, json_file_path_train, json_file_path_manual):
     # crop tif file
-    json_to_new_coordinates(tif_file_name, json_file_name_train)
-    with open(f"{json_file_name_train}_new_coord.json", "r") as f:
+    json_to_new_coordinates(tif_file_path, json_file_path_train)
+    with open(json_file_path_train.replace(".json", "_new_coord.json"), "r") as f:
         train = json.load(f)
         features_train = train["features"]
     num_of_files = len(features_train)
-    crop_tif(tif_file_name, json_file_name_train)
+    crop_tif(tif_file_path, json_file_path_train)
 
-    json_to_new_coordinates(tif_file_name, json_file_name_manual)
+    json_to_new_coordinates(tif_file_path, json_file_path_manual)
 
-    with open(f"{json_file_name_manual}_new_coord.json", "r") as f:
+    with open(json_file_path_manual.replace(".json", "_new_coord.json"), "r") as f:
         data = json.load(f)
         features = data["features"]
     for i in range(num_of_files):
@@ -147,7 +148,12 @@ def convert_annotation(tif_file_name, json_file_name_train, json_file_name_manua
         outfile.close()
 
 
+with open("worker-config.json", "r") as f:
+    worker_config = json.load(f)
+    tif_file_path = worker_config["parameters"]["resource_tif"]
+    json_file_path_train = worker_config["parameters"]["annotations_train"]
+    json_file_path_manual = worker_config["parameters"]["annotations_manual"]
+
+
 if __name__ == "__main__":
-    convert_annotation(
-        "orthophoto", "boat_ANNOTATIONS_TRAIN", "boat_ANNOTATIONS_MANUAL"
-    )
+    convert_annotation(tif_file_path, json_file_path_train, json_file_path_manual)

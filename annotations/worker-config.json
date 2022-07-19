@@ -1,0 +1,14 @@
+{
+    "parameters": {
+        "mode": "train",
+        "resource_type": "orthophoto",
+        "classes": [
+            "boat"
+        ],
+        "model_file": "path_to_model",
+        "resource_tif": "C:/Users/AKhusnullina/Desktop/test/orthophoto.tif",
+        "annotations_train": "C:/Users/AKhusnullina/Desktop/test/boat_ANNOTATIONS_TRAIN.json",
+        "annotations_manual": "C:/Users/AKhusnullina/Desktop/test/boat_ANNOTATIONS_MANUAL.json",
+        "result_model": "path_to_save_result_model"
+    }
+}
